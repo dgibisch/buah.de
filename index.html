@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1280">
+<title>buah · Influencer Monitor</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --accent:#0066FF;--accent-light:#EBF2FF;--accent-dark:#0047CC;
+  --buah:#F97316;--buah-light:#FFF7ED;--buah-border:#FED7AA;
+  --bg-base:#FAFAFA;--bg-surface:#FFFFFF;--bg-subtle:#F4F4F5;--bg-muted:#F0F0F1;
+  --text-primary:#0A0A0B;--text-secondary:#52525B;--text-tertiary:#A1A1AA;
+  --border-subtle:#E4E4E7;--border-default:#D4D4D8;
+  --green:#16A34A;--green-bg:#F0FDF4;--green-border:#BBF7D0;
+  --red:#DC2626;--red-bg:#FEF2F2;--red-border:#FECACA;
+  --amber:#D97706;--amber-bg:#FFFBEB;--amber-border:#FDE68A;
+  --blue:#2563EB;--blue-bg:#EFF6FF;--blue-border:#BFDBFE;
+  --radius-sm:6px;--radius-md:8px;--radius-lg:12px;--radius-full:9999px;
+  --shadow-sm:0 1px 2px 0 rgba(0,0,0,0.05);
+  --shadow-md:0 4px 6px -1px rgba(0,0,0,0.07),0 2px 4px -1px rgba(0,0,0,0.04);
+  --shadow-lg:0 10px 30px -5px rgba(0,0,0,0.15),0 8px 12px -4px rgba(0,0,0,0.06);
+  --shadow-focus:0 0 0 3px rgba(0,102,255,0.15);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{font-family:'DM Sans',system-ui,sans-serif;font-size:14px;color:var(--text-primary);background:var(--bg-base);line-height:1.5;-webkit-font-smoothing:antialiased}
+.mono{font-family:'JetBrains Mono',monospace}
+.serif{font-family:'Instrument Serif',serif}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit}
+input,select{font-family:inherit;font-size:14px;color:var(--text-primary)}
+img{display:block;max-width:100%}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+
+/* ============ TOPBAR ============ */
+.topbar{position:sticky;top:0;background:var(--bg-surface);border-bottom:1px solid var(--border-subtle);z-index:50}
+.topbar-row{height:56px;display:flex;align-items:center;padding:0 28px;gap:16px;max-width:1400px;margin:0 auto}
+.brand-logo{height:28px;display:block}
+.brand-label{font-size:12.5px;color:var(--text-tertiary);font-weight:500;border-left:1px solid var(--border-subtle);padding-left:12px;margin-left:4px}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:12px}
+.powered-pill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-secondary);background:var(--buah-light);border:1px solid var(--buah-border);padding:4px 10px;border-radius:var(--radius-full);font-weight:500}
+.powered-pill .dot{width:5px;height:5px;background:var(--buah);border-radius:50%}
+.bell-btn{width:34px;height:34px;border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;color:var(--text-secondary);position:relative;cursor:pointer}
+.bell-btn:hover{background:var(--bg-subtle);color:var(--text-primary)}
+.bell-badge{position:absolute;top:4px;right:4px;background:var(--red);color:#fff;font-size:9.5px;font-weight:700;min-width:16px;height:16px;border-radius:9999px;display:flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid #fff}
+
+.tab-row{display:flex;padding:0 28px;gap:4px;max-width:1400px;margin:0 auto}
+.tab{padding:12px 18px;font-size:14px;color:var(--text-secondary);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;font-weight:500;transition:all .15s;display:flex;align-items:center;gap:6px}
+.tab:hover{color:var(--text-primary)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+.tab-badge{background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:1px 6px;border-radius:9999px;min-width:18px;text-align:center}
+
+/* ============ MAIN ============ */
+.main{max-width:1400px;margin:0 auto;padding:28px 28px 80px}
+.screen{display:none}
+.screen.active{display:block;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+.page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:22px;flex-wrap:wrap}
+.page-title{font-size:24px;font-weight:600;letter-spacing:-0.01em}
+.page-sub{color:var(--text-secondary);font-size:14px;margin-top:4px}
+
+/* ============ BANNER ============ */
+.banner{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:var(--radius-md);margin-bottom:24px;font-size:13.5px}
+.banner-red{background:var(--red-bg);border:1px solid var(--red-border);color:#991B1B}
+.banner-red a{color:#991B1B;font-weight:600;margin-left:auto}
+.banner .icon{font-size:18px}
+
+/* ============ KPI ============ */
+.grid{display:grid;gap:16px}
+.grid-4{grid-template-columns:repeat(4,1fr)}
+.grid-3{grid-template-columns:repeat(3,1fr)}
+.grid-2{grid-template-columns:repeat(2,1fr)}
+.kpi-card{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:18px;transition:all .15s ease}
+.kpi-card:hover{box-shadow:var(--shadow-md)}
+.kpi-label{font-size:12px;color:var(--text-secondary);font-weight:500;margin-bottom:10px}
+.kpi-value{font-family:'JetBrains Mono',monospace;font-size:28px;font-weight:500;letter-spacing:-0.02em;line-height:1}
+.kpi-delta{margin-top:8px;font-size:12px;color:var(--text-secondary)}
+.kpi-delta.up{color:var(--green)}
+.kpi-delta.down{color:var(--red)}
+
+/* ============ CARDS ============ */
+.card{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:20px}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:12px}
+.card-title{font-size:14px;font-weight:600}
+.card-sub{font-size:12px;color:var(--text-tertiary)}
+
+/* ============ BADGES ============ */
+.badge{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;padding:2px 8px;border-radius:var(--radius-full);background:var(--bg-subtle);color:var(--text-secondary)}
+.badge-dot{width:6px;height:6px;border-radius:50%;background:currentColor}
+.badge-green{background:var(--green-bg);color:#15803D;border:1px solid var(--green-border)}
+.badge-amber{background:var(--amber-bg);color:#B45309;border:1px solid var(--amber-border)}
+.badge-red{background:var(--red-bg);color:#B91C1C;border:1px solid var(--red-border)}
+.badge-blue{background:var(--blue-bg);color:#1D4ED8;border:1px solid var(--blue-border)}
+.badge-buah{background:var(--buah-light);color:#9A3412;border:1px solid var(--buah-border)}
+.badge-neutral{background:var(--bg-subtle);color:var(--text-secondary);border:1px solid var(--border-subtle)}
+.platform-ig{background:linear-gradient(135deg,#F58529,#DD2A7B,#8134AF);color:#fff;border:none;font-weight:600}
+.platform-tt{background:#0A0A0B;color:#fff;border:none;font-weight:600}
+
+/* ============ BUTTONS ============ */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:34px;padding:0 14px;border-radius:var(--radius-md);font-size:13.5px;font-weight:500;transition:all .15s ease;white-space:nowrap}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-dark)}
+.btn-secondary{background:var(--bg-surface);border:1px solid var(--border-default);color:var(--text-primary)}
+.btn-secondary:hover{background:var(--bg-subtle)}
+.btn-ghost{color:var(--text-secondary)}
+.btn-ghost:hover{background:var(--bg-subtle);color:var(--text-primary)}
+.btn-sm{height:28px;padding:0 10px;font-size:12.5px}
+.btn-buah{background:var(--buah);color:#fff}
+.btn-buah:hover{background:#EA580C}
+.btn-danger{background:var(--red);color:#fff}
+.btn-danger:hover{background:#B91C1C}
+
+/* ============ TABLE ============ */
+.table-wrap{border:1px solid var(--border-subtle);border-radius:var(--radius-lg);background:var(--bg-surface);overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;font-weight:500;color:var(--text-tertiary);font-size:11px;text-transform:uppercase;letter-spacing:0.06em;padding:10px 16px;background:var(--bg-subtle);border-bottom:1px solid var(--border-subtle)}
+td{padding:14px 16px;border-bottom:1px solid var(--border-subtle);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr{transition:background .12s}
+tbody tr:hover{background:#FAFAFA}
+
+.creator-cell{display:flex;align-items:center;gap:10px}
+.creator-cell .avatar{width:40px;height:40px;border-radius:50%;object-fit:cover;border:1px solid var(--border-subtle)}
+.creator-cell .name{font-weight:600;font-size:13.5px;line-height:1.2}
+.creator-cell .handle{font-size:12px;color:var(--text-tertiary);margin-top:1px}
+
+.health-bar{display:flex;align-items:center;gap:8px}
+.health-track{width:60px;height:5px;background:var(--bg-muted);border-radius:9999px;overflow:hidden}
+.health-fill{height:100%;border-radius:9999px}
+.health-fill.g{background:var(--green)}
+.health-fill.a{background:var(--amber)}
+.health-fill.r{background:var(--red)}
+.health-num{font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:600;min-width:24px}
+
+.cell-status .ok{color:var(--green);font-weight:600}
+.cell-status .warn{color:var(--amber);font-weight:600}
+.cell-status .bad{color:var(--red);font-weight:600}
+
+/* ============ CREATOR GRID ============ */
+.cgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.ccard{background:var(--bg-surface);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:22px;transition:all .15s ease;display:flex;flex-direction:column;gap:14px}
+.ccard:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.ccard-top{display:flex;align-items:flex-start;gap:14px}
+.ccard-top img.avatar{width:56px;height:56px;border-radius:50%;object-fit:cover;border:1px solid var(--border-subtle)}
+.ccard-name{font-weight:600;font-size:15px}
+.ccard-handle{font-size:13px;color:var(--text-tertiary);margin-top:1px}
+.ccard-niche{font-size:12px;color:var(--text-secondary);margin-top:6px}
+
+.stat-pills{display:flex;gap:8px}
+.stat-pill{flex:1;padding:10px 12px;background:var(--bg-base);border:1px solid var(--border-subtle);border-radius:var(--radius-md);text-align:center}
+.stat-pill .v{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:600}
+.stat-pill .l{font-size:10.5px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;margin-top:2px}
+
+.progress{height:6px;background:var(--bg-muted);border-radius:9999px;overflow:hidden}
+.progress-bar{height:100%;border-radius:9999px;transition:width .3s}
+.progress-bar.g{background:var(--green)}
+.progress-bar.a{background:var(--amber)}
+.progress-bar.r{background:var(--red)}
+
+.last-post{display:flex;gap:10px;padding:10px;background:var(--bg-base);border:1px solid var(--border-subtle);border-radius:var(--radius-md)}
+.last-post img{width:48px;height:48px;border-radius:6px;object-fit:cover;flex-shrink:0}
+.last-post .cap{font-size:12px;color:var(--text-secondary);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.last-post .time{font-size:11px;color:var(--text-tertiary);margin-top:3px}
+
+.red-flags{display:flex;gap:6px;flex-wrap:wrap}
+
+/* ============ RING ============ */
+.ring{position:relative;width:52px;height:52px;flex-shrink:0}
+.ring svg{transform:rotate(-90deg)}
+.ring-text{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'JetBrains Mono',monospace;font-weight:600;font-size:13px}
+.ring.lg{width:96px;height:96px}
+.ring.lg .ring-text{font-size:26px;flex-direction:column}
+.ring.lg .ring-text small{font-size:9.5px;color:var(--text-tertiary);font-weight:500;margin-top:2px;text-transform:uppercase;letter-spacing:0.05em}
+
+/* ============ SLIDE PANEL ============ */
+.panel-backdrop{position:fixed;inset:0;background:rgba(10,10,11,0.4);backdrop-filter:blur(2px);z-index:90;opacity:0;pointer-events:none;transition:opacity .25s}
+.panel-backdrop.open{opacity:1;pointer-events:auto}
+.panel{position:fixed;top:0;right:0;bottom:0;width:520px;background:#fff;box-shadow:var(--shadow-lg);z-index:100;transform:translateX(100%);transition:transform .3s ease;overflow-y:auto}
+.panel.open{transform:translateX(0)}
+.panel-head{padding:22px 24px 18px;border-bottom:1px solid var(--border-subtle);position:sticky;top:0;background:#fff;z-index:5}
+.panel-head .top-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px}
+.panel-head .creator-block{display:flex;align-items:center;gap:14px}
+.panel-head .creator-block img.avatar{width:60px;height:60px;border-radius:50%;object-fit:cover;border:1px solid var(--border-subtle)}
+.panel-head .name{font-weight:600;font-size:17px}
+.panel-head .handle{font-size:13px;color:var(--text-tertiary)}
+.panel-close{width:32px;height:32px;border-radius:8px;background:var(--bg-subtle);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text-secondary)}
+.panel-close:hover{background:var(--bg-muted);color:var(--text-primary)}
+.panel-tabs{display:flex;gap:2px;border-bottom:1px solid var(--border-subtle);margin:-2px -24px 0;padding:0 24px}
+.panel-tab{padding:10px 14px;font-size:13px;color:var(--text-secondary);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;font-weight:500}
+.panel-tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+.panel-body{padding:22px 24px}
+
+.stat-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border-subtle);font-size:13.5px}
+.stat-row:last-child{border-bottom:none}
+.stat-row .l{color:var(--text-secondary)}
+.stat-row .v{font-weight:600;font-family:'JetBrains Mono',monospace}
+
+.agree-card{padding:16px;background:var(--bg-base);border:1px solid var(--border-subtle);border-radius:var(--radius-md);margin-top:14px}
+.agree-card h4{font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-tertiary);margin-bottom:10px;font-weight:600}
+
+.copy-code{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--buah-light);border:1px dashed var(--buah-border);border-radius:var(--radius-md);margin-top:12px}
+.copy-code .code{font-family:'JetBrains Mono',monospace;font-weight:600;font-size:14px;color:#9A3412;flex:1}
+.copy-code button{color:#9A3412;font-size:12px;font-weight:600}
+
+.post-img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:var(--radius-md);background:var(--bg-subtle)}
+.compliance-check{padding:14px 0;border-bottom:1px solid var(--border-subtle)}
+.compliance-check:last-child{border-bottom:none}
+.check-row{display:flex;align-items:center;gap:10px;padding:6px 0;font-size:13.5px}
+.check-row .ico{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;flex-shrink:0}
+.check-row .ico.ok{background:var(--green-bg);color:var(--green)}
+.check-row .ico.bad{background:var(--red-bg);color:var(--red)}
+
+.comment{display:flex;gap:10px;padding:12px 0;border-bottom:1px solid var(--border-subtle)}
+.comment:last-child{border-bottom:none}
+.comment .avatar{width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0;background:var(--bg-subtle)}
+.comment-body{flex:1;min-width:0}
+.comment-user{font-weight:600;font-size:12.5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.comment-text{font-size:13px;color:var(--text-secondary);margin-top:2px;line-height:1.45}
+
+.sent-bars{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.sent-bar{display:grid;grid-template-columns:80px 1fr 44px;align-items:center;gap:10px;font-size:12.5px}
+.sent-track{height:8px;background:var(--bg-muted);border-radius:9999px;overflow:hidden}
+.sent-fill{height:100%;border-radius:9999px}
+
+.ai-box{background:linear-gradient(135deg,#EBF2FF 0%,#F0F4FF 100%);border:1px solid #BFDBFE;border-radius:var(--radius-md);padding:14px 16px;display:flex;gap:12px;align-items:flex-start;margin-top:16px}
+.ai-icon{width:28px;height:28px;background:var(--accent);color:#fff;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:700;font-size:11px;font-family:'JetBrains Mono',monospace}
+.ai-box .ai-body{flex:1}
+.ai-box .ai-title{font-size:11px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:5px}
+.ai-box p{font-size:13.5px;line-height:1.55}
+
+.risk-row{display:flex;align-items:center;gap:8px;padding:14px;background:var(--bg-base);border:1px solid var(--border-subtle);border-radius:var(--radius-md);margin-top:14px}
+.risk-dot{width:12px;height:12px;border-radius:50%}
+.risk-dot.low{background:var(--green)}
+.risk-dot.med{background:var(--amber)}
+.risk-dot.high{background:var(--red)}
+
+/* ============ SEARCH ============ */
+.search-input{position:relative;flex:0 0 320px}
+.search-input input{width:100%;height:36px;padding:0 12px 0 36px;border:1px solid var(--border-default);border-radius:var(--radius-md);background:#fff;font-size:13.5px;outline:none}
+.search-input input:focus{border-color:var(--accent);box-shadow:var(--shadow-focus)}
+.search-input .ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-tertiary);pointer-events:none}
+
+/* ============ ALERTS ============ */
+.alert-tabs{display:flex;gap:2px;border-bottom:1px solid var(--border-subtle);margin-bottom:18px}
+.alert-row{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border:1px solid var(--border-subtle);border-radius:var(--radius-md);background:#fff;margin-bottom:8px;transition:all .15s}
+.alert-row.unread.crit{border-left:3px solid var(--red)}
+.alert-row.unread.warn{border-left:3px solid var(--amber)}
+.alert-row.unread.info{border-left:3px solid var(--blue)}
+.alert-row.read{opacity:.6}
+.alert-row:hover{box-shadow:var(--shadow-sm)}
+.alert-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;margin-top:7px}
+.alert-dot.crit{background:var(--red)}
+.alert-dot.warn{background:var(--amber)}
+.alert-dot.info{background:var(--blue)}
+.alert-row img.avatar{width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.alert-body{flex:1;min-width:0}
+.alert-meta{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-tertiary);margin-bottom:2px}
+.alert-creator{font-weight:600;color:var(--text-primary);font-size:13px}
+.alert-msg{font-size:13.5px;color:var(--text-secondary);margin-top:2px;line-height:1.45}
+.alert-actions{display:flex;gap:6px;margin-top:8px}
+.alert-close{cursor:pointer;color:var(--text-tertiary);width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.alert-close:hover{background:var(--bg-subtle);color:var(--text-primary)}
+
+.info-card{background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:var(--radius-md);padding:18px;margin-top:24px}
+.info-card .title{font-weight:600;font-size:14px;color:#1E40AF;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.info-card ul{list-style:none;padding:0;margin:0}
+.info-card li{font-size:13.5px;color:#1E3A8A;padding:5px 0;line-height:1.5;display:flex;align-items:flex-start;gap:8px}
+.info-card li::before{content:'•';color:var(--blue);font-weight:700;flex-shrink:0}
+
+/* ============ TOAST ============ */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--text-primary);color:#fff;padding:12px 18px;border-radius:var(--radius-md);box-shadow:var(--shadow-lg);font-size:13.5px;font-weight:500;z-index:200;display:none}
+.toast.show{display:flex;align-items:center;gap:10px;animation:slideUp .25s}
+@keyframes slideUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.ic{width:16px;height:16px;flex-shrink:0}
+
+/* ============ GOALS MODAL ============ */
+.goals-modal{position:fixed;inset:0;z-index:120;display:none;align-items:center;justify-content:center}
+.goals-modal.open{display:flex}
+.goals-backdrop{position:absolute;inset:0;background:rgba(10,10,11,0.45);backdrop-filter:blur(2px)}
+.goals-dialog{position:relative;width:520px;max-width:calc(100vw - 40px);max-height:calc(100vh - 40px);background:#fff;border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);display:flex;flex-direction:column;overflow:hidden}
+.goals-head{padding:20px 24px;border-bottom:1px solid var(--border-subtle);display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.goals-body{padding:20px 24px;overflow-y:auto;flex:1}
+.goals-foot{padding:14px 24px;border-top:1px solid var(--border-subtle);display:flex;justify-content:flex-end;gap:8px;background:var(--bg-base)}
+.goals-field{margin-bottom:14px}
+.goals-field label{display:block;font-size:12.5px;font-weight:500;color:var(--text-secondary);margin-bottom:5px}
+.input{width:100%;height:36px;border:1px solid var(--border-default);border-radius:var(--radius-md);padding:0 12px;background:#fff;font-size:14px;outline:none;transition:all .15s}
+.input:focus{border-color:var(--accent);box-shadow:var(--shadow-focus)}
+select.input{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M3 5l3 3 3-3' stroke='%2352525B' stroke-width='1.5' fill='none' stroke-linecap='round'/></svg>");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
+.tag-input{min-height:36px;border:1px solid var(--border-default);border-radius:var(--radius-md);padding:5px 6px;display:flex;flex-wrap:wrap;gap:5px;align-items:center;background:#fff}
+.tag-input input{flex:1;border:none;outline:none;background:none;min-width:140px;height:24px;font-size:13px}
+.tag{display:inline-flex;align-items:center;gap:5px;background:var(--accent-light);color:var(--accent);padding:3px 8px;border-radius:9999px;font-size:12px;font-weight:500}
+.tag.tag-red{background:var(--red-bg);color:#B91C1C}
+.tag .x{cursor:pointer;opacity:.65;font-weight:600}
+.tag .x:hover{opacity:1}
+.info-box-sm{background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:var(--radius-md);padding:10px 12px;font-size:12.5px;color:#1E40AF;margin-top:8px}
+
+/* ============ ADD CREATOR ============ */
+.add-steps{display:flex;align-items:center;gap:10px;padding:14px 24px;border-bottom:1px solid var(--border-subtle);background:var(--bg-base)}
+.add-step{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text-tertiary);font-weight:500}
+.add-step.active{color:var(--text-primary);font-weight:600}
+.add-step .num{width:22px;height:22px;border-radius:50%;background:var(--bg-subtle);color:var(--text-tertiary);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;border:1px solid var(--border-subtle)}
+.add-step.active .num{background:var(--accent);color:#fff;border-color:var(--accent)}
+.add-step.done .num{background:var(--green);color:#fff;border-color:var(--green)}
+.add-sep{flex:1;height:1px;background:var(--border-subtle);max-width:60px}
+.search-loading{display:flex;align-items:center;gap:14px;padding:18px;background:var(--bg-base);border:1px solid var(--border-subtle);border-radius:var(--radius-md);margin-top:14px}
+.mini-spinner{width:24px;height:24px;border:2.5px solid var(--bg-subtle);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.found-card{margin-top:14px;padding:16px;background:var(--bg-base);border:1px solid var(--border-subtle);border-radius:var(--radius-md)}
+.muted{color:var(--text-tertiary)}
+.sub{color:var(--text-secondary);font-size:13px}
+.flex{display:flex;gap:10px;align-items:center}
+.flex-between{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.divider{height:1px;background:var(--border-subtle);margin:14px 0}
+.empty{text-align:center;padding:40px 20px;color:var(--text-secondary)}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="topbar-row">
+    <img src="https://buah.de/cdn/shop/files/Buah_logo.png?v=1695722756" class="brand-logo" alt="buah" onerror="this.outerHTML='<div style=&quot;font-family:Instrument Serif,serif;font-size:24px;color:#F97316;font-weight:600;letter-spacing:-.02em&quot;>buah</div>'">
+    <div class="brand-label">Influencer Monitor</div>
+    <div class="topbar-right">
+      <div class="bell-btn" onclick="navTo('alerts')" title="Alerts">
+        <svg class="ic" viewBox="0 0 16 16" fill="none"><path d="M3 12V7a5 5 0 0110 0v5l1 1H2l1-1zM6 14a2 2 0 004 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="bell-badge">3</span>
+      </div>
+    </div>
+  </div>
+  <nav class="tab-row">
+    <div class="tab active" data-tab="dashboard" onclick="navTo('dashboard')">
+      <svg class="ic" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5.5" height="5.5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="8.5" y="2" width="5.5" height="5.5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="2" y="8.5" width="5.5" height="5.5" rx="1" stroke="currentColor" stroke-width="1.5"/><rect x="8.5" y="8.5" width="5.5" height="5.5" rx="1" stroke="currentColor" stroke-width="1.5"/></svg>
+      Dashboard
+    </div>
+    <div class="tab" data-tab="creators" onclick="navTo('creators')">
+      <svg class="ic" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="2.5" stroke="currentColor" stroke-width="1.5"/><path d="M2 13c0-2.2 1.8-4 4-4s4 1.8 4 4M11 7a2 2 0 100-4M14 13c0-2-1.4-3.5-3-3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Creators
+    </div>
+    <div class="tab" data-tab="alerts" onclick="navTo('alerts')">
+      <svg class="ic" viewBox="0 0 16 16" fill="none"><path d="M3 12V7a5 5 0 0110 0v5l1 1H2l1-1zM6 14a2 2 0 004 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Alerts <span class="tab-badge">3</span>
+    </div>
+  </nav>
+</header>
+
+<main class="main" id="main"></main>
+
+<!-- SLIDE PANEL -->
+<div class="panel-backdrop" id="panel-backdrop" onclick="closePanel()"></div>
+<aside class="panel" id="panel"></aside>
+
+<div class="toast" id="toast"></div>
+<div class="goals-modal" id="goals-modal"></div>
+<div class="goals-modal" id="add-modal"></div>
+
+<script>
+/* ============ MOCK DATA ============ */
+const CREATORS = [
+  {
+    id:1,name:"Lena Bachmann",handle:"@lena.eats.clean",platform:"Instagram",
+    avatar:"https://i.pravatar.cc/96?img=47",
+    followers:94200,niche:"Healthy Snacking",status:"active",health_score:92,
+    view_rate:8.7,engagement_rate:5.1,sentiment_score:94,last_post:"vor 3h",
+    last_post_img:"https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400&h=400&fit=crop",
+    posts_this_week:3,compliance:100,discount_code:"LENA15",red_flags:[],
+    last_caption:"Mein absoluter Lieblingssnack gerade: @buah_de Gefriergetrocknete Erdbeeren 🍓 Süß, knusprig, 0 Zuckerzusatz — ich bin obsessed! #buah #healthysnacks #gefriergetrocknet",
+    hashtag_ok:true,mention_ok:true,competitor:false,
+    likes:8420,post_comments:312,views:48200,
+    comments:[
+      {user:"sarah_healthy",avatar:"https://i.pravatar.cc/48?img=5",text:"Wo kann ich das kaufen?? 😍",sentiment:"positive"},
+      {user:"snack.queen.de",avatar:"https://i.pravatar.cc/48?img=23",text:"Die esse ich jeden Tag! Absolut empfehlenswert",sentiment:"positive"},
+      {user:"fitgirl.munich",avatar:"https://i.pravatar.cc/48?img=33",text:"Code LENA15 funktioniert, gerade bestellt! 🙌",sentiment:"positive"},
+      {user:"healthy.mama.2",avatar:"https://i.pravatar.cc/48?img=44",text:"Sind die auch für Kinder geeignet?",sentiment:"neutral"},
+      {user:"erdbeer.lover",avatar:"https://i.pravatar.cc/48?img=49",text:"Meine Kinder lieben die! Schon 3x bestellt",sentiment:"positive"}
+    ],
+    ai_summary:"Lena's Audience zeigt starke Kaufabsicht — 'Wo kaufen?' und Code-Verwendung in 18% der Kommentare. Die Produktintegration wirkt authentisch. Sentiment stabil bei 94%. Empfehlung: Weiter buchen, Budget erhöhen.",
+    recommendations:["Budget für Q3 um 30% erhöhen","Exklusiven Launch-Code für Lena's Audience testen","Story-Highlights mit Use-Cases ausbauen"],
+    risk:"low"
+  },
+  {
+    id:2,name:"Tobias Kramer",handle:"@tobi.fitlife",platform:"TikTok",
+    avatar:"https://i.pravatar.cc/96?img=12",
+    followers:187400,niche:"Fitness & Nutrition",status:"warning",health_score:61,
+    view_rate:5.3,engagement_rate:3.2,sentiment_score:71,last_post:"vor 42h",
+    last_post_img:"https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=400&fit=crop",
+    posts_this_week:1,compliance:55,discount_code:"TOBI10",red_flags:["posting_behind","hashtag_missing"],
+    last_caption:"Pre-Workout Snack Ideen für mehr Energie 💪 Was esst ihr vor dem Training?",
+    hashtag_ok:false,mention_ok:false,competitor:false,
+    likes:4210,post_comments:142,views:62100,
+    comments:[
+      {user:"gym.bro.berlin",avatar:"https://i.pravatar.cc/48?img=8",text:"Guter Content aber wo ist der buah Link?",sentiment:"neutral"},
+      {user:"fitness.anna",avatar:"https://i.pravatar.cc/48?img=20",text:"Schöner Post aber du hast buah vergessen zu taggen 😅",sentiment:"neutral"},
+      {user:"sporty.kai",avatar:"https://i.pravatar.cc/48?img=68",text:"Das Training sieht gut aus!",sentiment:"positive"}
+    ],
+    ai_summary:"⚠️ Tobi hat diese Woche nur 1 von 3 vereinbarten Posts geliefert. #buah und @buah_de fehlen im letzten Post komplett. View Rate 5,3% liegt unter dem Ziel von 7%. Sofortiger Reminder empfohlen.",
+    recommendations:["Reminder senden — Posting-Frequenz nicht eingehalten","Briefing nachschärfen: #buah & @buah_de als Pflicht","2 Wochen beobachten, dann ggf. Kooperation überdenken"],
+    risk:"med"
+  },
+  {
+    id:3,name:"Marie Sommer",handle:"@marie.plantbased",platform:"Instagram",
+    avatar:"https://i.pravatar.cc/96?img=45",
+    followers:52800,niche:"Plant-based & Vegan",status:"active",health_score:89,
+    view_rate:9.4,engagement_rate:7.2,sentiment_score:96,last_post:"vor 6h",
+    last_post_img:"https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&h=400&fit=crop",
+    posts_this_week:2,compliance:100,discount_code:"MARIE20",red_flags:[],
+    last_caption:"Smoothie Bowl Upgrade mit @buah_de Gefrierfrüchten 🫐✨ Farbe, Crunch und 100% Natur — was will man mehr? #buah #plantbased #vegansnacks #gefriergetrocknet",
+    hashtag_ok:true,mention_ok:true,competitor:false,
+    likes:3890,post_comments:287,views:34100,
+    comments:[
+      {user:"vegan.vibes.de",avatar:"https://i.pravatar.cc/48?img=16",text:"Das sieht unglaublich aus 😍 Rezept?",sentiment:"positive"},
+      {user:"plant.power.girl",avatar:"https://i.pravatar.cc/48?img=24",text:"Marie empfiehlt = ich kaufe. Bestellt! ✅",sentiment:"positive"},
+      {user:"green.living.lu",avatar:"https://i.pravatar.cc/48?img=29",text:"Endlich mal Snacks ohne Mist drin 🙌",sentiment:"positive"},
+      {user:"smoothie.queen.hh",avatar:"https://i.pravatar.cc/48?img=36",text:"Welche Früchte hast du genommen?",sentiment:"neutral"}
+    ],
+    ai_summary:"Marie ist die stärkste Micro-Influencerin im Portfolio. Engagement Rate 7,2% — fast dreimal über Branchendurchschnitt. Ihre vegane Community passt perfekt zu buah's 0% Zuckerzusatz-Positionierung. Sehr empfehlenswert für weiteren Ausbau.",
+    recommendations:["Als Markenbotschafterin für Quarterly Launches positionieren","Co-Creation: Vegane Smoothie-Bowl-Linie","Budget verdoppeln — ROI rechtfertigt es"],
+    risk:"low"
+  },
+  {
+    id:4,name:"Felix Hartmann",handle:"@felix.snacktime",platform:"TikTok",
+    avatar:"https://i.pravatar.cc/96?img=13",
+    followers:341000,niche:"Food & Snacks",status:"critical",health_score:28,
+    view_rate:2.9,engagement_rate:1.4,sentiment_score:38,last_post:"vor 5 Tagen",
+    last_post_img:"https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=400&fit=crop",
+    posts_this_week:0,compliance:15,discount_code:"FELIX10",red_flags:["no_post_48h","sentiment_negative","view_rate_low","competitor_detected"],
+    last_caption:"Die neuen Snacks von @naturebox sind mega 🔥 #snacks #food",
+    hashtag_ok:false,mention_ok:false,competitor:true,
+    likes:2400,post_comments:189,views:48200,
+    comments:[
+      {user:"snack.critic.de",avatar:"https://i.pravatar.cc/48?img=52",text:"Du machst Werbung für jeden der zahlt oder? 🙄",sentiment:"negative"},
+      {user:"food.real.talk",avatar:"https://i.pravatar.cc/48?img=58",text:"Erst buah, jetzt naturebox — macht dich das nicht unglaubwürdig?",sentiment:"negative"},
+      {user:"disappointed.fan",avatar:"https://i.pravatar.cc/48?img=64",text:"Du hast schon buah promoted und jetzt den Konkurrenten?",sentiment:"negative"},
+      {user:"just.a.viewer",avatar:"https://i.pravatar.cc/48?img=70",text:"Content wird schlechter seit Monaten",sentiment:"negative"}
+    ],
+    ai_summary:"🚨 KRITISCH. Felix hat 5 Tage nicht gepostet und hat im letzten Post Konkurrenz-Brand @naturebox erwähnt — klarer Vertragsverstoß. Sentiment auf 38% gefallen durch Community-Kritik. Sofortiges Gespräch notwendig. Kooperation überdenken.",
+    recommendations:["SOFORT: Persönliches Gespräch — Vertragsverstoß durch @naturebox","Rechtliche Implikationen prüfen","Kooperation pausieren oder beenden","Budget umverteilen auf Top-Performer"],
+    risk:"high"
+  },
+  {
+    id:5,name:"Jana Wolf",handle:"@jana.gesundleben",platform:"Instagram",
+    avatar:"https://i.pravatar.cc/96?img=32",
+    followers:128600,niche:"Gesund Leben & Familie",status:"active",health_score:87,
+    view_rate:7.8,engagement_rate:4.6,sentiment_score:91,last_post:"vor 1h",
+    last_post_img:"https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?w=400&h=400&fit=crop",
+    posts_this_week:3,compliance:95,discount_code:"JANA10",red_flags:[],
+    last_caption:"Gesunder Schulranzen-Snack für die Kinder 🎒 @buah_de Gefrierfrüchte sind unser Favorit — kein Zuckerzusatz, echte Früchte, meine Kinder lieben sie! #buah #gesundleben #kindernacks",
+    hashtag_ok:true,mention_ok:true,competitor:false,
+    likes:6310,post_comments:412,views:42700,
+    comments:[
+      {user:"mama.gesund.de",avatar:"https://i.pravatar.cc/48?img=41",text:"Gerade bestellt für die Schulbox meiner Tochter! 😍",sentiment:"positive"},
+      {user:"familie.zuhause",avatar:"https://i.pravatar.cc/48?img=43",text:"Endlich gesunde Snacks die Kinder auch mögen 🙌",sentiment:"positive"},
+      {user:"eltern.tipps.de",avatar:"https://i.pravatar.cc/48?img=48",text:"Code JANA10 funktioniert! Danke für den Tipp",sentiment:"positive"},
+      {user:"healthy.family.at",avatar:"https://i.pravatar.cc/48?img=46",text:"Welche Früchte empfiehlst du für Kinder?",sentiment:"neutral"}
+    ],
+    ai_summary:"Jana erreicht eine besonders kaufstarke Zielgruppe: Eltern die gesunde Kindersnacks suchen. 'Für die Schulbox bestellt' ist ein häufiges Kommentarmuster — direkte Kaufkonversion. Gut für buah's Familienpositionierung.",
+    recommendations:["Für Back-to-School Kampagne als Headliner positionieren","Family-Pack als exklusiven Code für Jana's Audience","Story-Serie: 'Snacks für die Schulbox' co-developen"],
+    risk:"low"
+  },
+  {
+    id:6,name:"Nico Berg",handle:"@nicoberg.running",platform:"TikTok",
+    avatar:"https://i.pravatar.cc/96?img=60",
+    followers:73200,niche:"Running & Endurance",status:"warning",health_score:63,
+    view_rate:6.1,engagement_rate:3.8,sentiment_score:74,last_post:"vor 28h",
+    last_post_img:"https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=400&h=400&fit=crop",
+    posts_this_week:2,compliance:70,discount_code:"NICO15",red_flags:["view_rate_low","hashtag_missing"],
+    last_caption:"Marathon-Prep Woche 3 — Ernährung ist alles! Meine Go-To Snacks für lange Läufe 🏃 @buah_de dabei natürlich",
+    hashtag_ok:false,mention_ok:true,competitor:false,
+    likes:1840,post_comments:78,views:24600,
+    comments:[
+      {user:"runner.berlin.de",avatar:"https://i.pravatar.cc/48?img=14",text:"Welche Früchte nimmst du auf langen Läufen?",sentiment:"neutral"},
+      {user:"marathon.mama",avatar:"https://i.pravatar.cc/48?img=19",text:"Super Tipp! Werde ich ausprobieren vor dem nächsten Halbmarathon",sentiment:"positive"},
+      {user:"trail.runner.at",avatar:"https://i.pravatar.cc/48?img=51",text:"Gutes Content aber Hashtag fehlt 😄",sentiment:"neutral"}
+    ],
+    ai_summary:"Nico's Running-Audience ist klein aber sehr spezifisch und konversionsstark. #buah fehlt im letzten Post. View Rate 6,1% knapp unter Ziel. Reminder senden, dann beobachten.",
+    recommendations:["Reminder: #buah als Pflicht-Hashtag","Marathon-Content-Serie verlängern — performt überdurchschnittlich","View Rate über 2 Wochen tracken"],
+    risk:"med"
+  }
+];
+
+const ALERTS = [
+  {id:1,severity:"critical",creator_id:4,message:"Kein Post seit 5 Tagen — Vereinbarung: 3x pro Woche",time:"vor 2h",read:false},
+  {id:2,severity:"critical",creator_id:4,message:"Konkurrenz-Brand @naturebox im letzten Post erwähnt — Vertragsverstoß",time:"vor 5h",read:false},
+  {id:3,severity:"critical",creator_id:4,message:"Sentiment auf 38% gefallen — negative Community-Reaktion",time:"vor 6h",read:false},
+  {id:4,severity:"warning",creator_id:2,message:"Nur 1/3 Posts diese Woche — Reminder gesendet",time:"vor 8h",read:false},
+  {id:5,severity:"warning",creator_id:2,message:"#buah und @buah_de fehlen im letzten TikTok",time:"vor 10h",read:true},
+  {id:6,severity:"warning",creator_id:6,message:"#buah Hashtag fehlt im letzten Post",time:"vor 14h",read:true},
+  {id:7,severity:"info",creator_id:3,message:"Beste Engagement Rate der Woche: 7,2% — Ausreißer nach oben",time:"vor 1 Tag",read:true},
+  {id:8,severity:"info",creator_id:1,message:"Discount-Code LENA15 wurde 34x diese Woche verwendet",time:"vor 1 Tag",read:true}
+];
+
+const FLAG_LABELS = {
+  no_post_48h:"Kein Post",
+  posting_behind:"Posting zurück",
+  hashtag_missing:"Hashtag fehlt",
+  sentiment_negative:"Sentiment ↓",
+  view_rate_low:"View Rate ↓",
+  competitor_detected:"Konkurrenz!"
+};
+
+/* ============ HELPERS ============ */
+function fmt(n){return n.toLocaleString('de-DE')}
+function healthCls(h){return h>=80?'g':h>=50?'a':'r'}
+function statusBadge(s){
+  if(s==='active')return '<span class="badge badge-green"><span class="badge-dot"></span>Aktiv</span>';
+  if(s==='warning')return '<span class="badge badge-amber"><span class="badge-dot"></span>Warnung</span>';
+  if(s==='critical')return '<span class="badge badge-red"><span class="badge-dot"></span>Kritisch</span>';
+  return '<span class="badge">'+s+'</span>';
+}
+function platformBadge(p){
+  return p==='Instagram'?'<span class="badge platform-ig">IG</span>':'<span class="badge platform-tt">TT</span>';
+}
+function sentimentDot(s){
+  const col = s>=80?'var(--green)':s>=60?'var(--amber)':'var(--red)';
+  return `<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${col};margin-right:6px"></span>`;
+}
+function ring(score,size){
+  size = size||52;
+  const r = size/2-4, c = 2*Math.PI*r, off = c-(score/100)*c;
+  const col = score>=80?'#16A34A':score>=50?'#D97706':'#DC2626';
+  return `<div class="ring" style="width:${size}px;height:${size}px"><svg width="${size}" height="${size}"><circle cx="${size/2}" cy="${size/2}" r="${r}" stroke="#E4E4E7" stroke-width="4" fill="none"/><circle cx="${size/2}" cy="${size/2}" r="${r}" stroke="${col}" stroke-width="4" fill="none" stroke-dasharray="${c}" stroke-dashoffset="${off}" stroke-linecap="round"/></svg><div class="ring-text">${score}</div></div>`;
+}
+function ringLg(score,label){
+  const size=96, r=42, c=2*Math.PI*r, off=c-(score/100)*c;
+  const col = score>=80?'#16A34A':score>=50?'#D97706':'#DC2626';
+  return `<div class="ring lg"><svg width="${size}" height="${size}"><circle cx="48" cy="48" r="${r}" stroke="#E4E4E7" stroke-width="7" fill="none"/><circle cx="48" cy="48" r="${r}" stroke="${col}" stroke-width="7" fill="none" stroke-dasharray="${c}" stroke-dashoffset="${off}" stroke-linecap="round"/></svg><div class="ring-text">${score}${label?'<small>'+label+'</small>':''}</div></div>`;
+}
+
+/* ============ NAVIGATION ============ */
+let current = 'dashboard';
+let alertFilter = 'all';
+let creatorSearch = '';
+let panelCreator = null;
+let panelTab = 'overview';
+
+function navTo(tab){
+  current = tab;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===tab));
+  const main = document.getElementById('main');
+  if(tab==='dashboard') main.innerHTML = renderDashboard();
+  else if(tab==='creators') main.innerHTML = renderCreators();
+  else if(tab==='alerts') main.innerHTML = renderAlerts();
+  window.scrollTo(0,0);
+}
+
+/* ============ DASHBOARD ============ */
+function renderDashboard(){
+  const today = new Date().toLocaleDateString('de-DE',{weekday:'long',day:'numeric',month:'long'});
+  const avgHealth = Math.round(CREATORS.reduce((s,c)=>s+c.health_score,0)/CREATORS.length);
+  const avgView = (CREATORS.reduce((s,c)=>s+c.view_rate,0)/CREATORS.length).toFixed(1);
+  const postsToday = CREATORS.filter(c=>c.last_post.includes('h') && !c.last_post.includes('Tagen')).length;
+  const active = CREATORS.filter(c=>c.status==='active').length;
+  return `
+  <div class="page-head">
+    <div>
+      <div class="page-title">Dashboard</div>
+      <div class="page-sub">${today.charAt(0).toUpperCase()+today.slice(1)} · automatischer Sync alle 24h</div>
+    </div>
+    <div class="flex">
+      <span class="sub" style="font-size:12.5px">Letzter Sync: vor 12 Min</span>
+      <button class="btn btn-secondary"><svg class="ic" viewBox="0 0 16 16" fill="none"><path d="M2 8a6 6 0 1 1 2 4.5L2 14M14 8a6 6 0 0 1-12 0" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Jetzt synchronisieren</button>
+    </div>
+  </div>
+
+  <div class="banner banner-red">
+    <span class="icon">🚨</span>
+    <strong>3 kritische Alerts</strong> — Felix Hartmann benötigt sofortige Aufmerksamkeit
+    <a href="#" onclick="navTo('alerts');return false">Jetzt ansehen →</a>
+  </div>
+
+  <div class="grid grid-4" style="margin-bottom:24px">
+    <div class="kpi-card">
+      <div class="kpi-label">Aktive Creator</div>
+      <div class="kpi-value">${CREATORS.length}</div>
+      <div class="kpi-delta">${active} aktiv · ${CREATORS.length-active} brauchen Attention</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Ø Health Score</div>
+      <div class="kpi-value">${avgHealth}<span style="font-size:16px;color:var(--text-tertiary)">%</span></div>
+      <div class="kpi-delta down">↓ von 78%</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Posts heute</div>
+      <div class="kpi-value">${postsToday}</div>
+      <div class="kpi-delta">2 ausstehend</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Ø View Rate</div>
+      <div class="kpi-value">${avgView}<span style="font-size:16px;color:var(--text-tertiary)">%</span></div>
+      <div class="kpi-delta">Ziel: 7%</div>
+    </div>
+  </div>
+
+  <div class="card" style="padding:0;margin-bottom:24px">
+    <div style="padding:18px 22px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border-subtle)">
+      <div>
+        <div class="card-title">Creator Status Overview</div>
+        <div class="card-sub" style="margin-top:2px">Alle 6 Creators · sortiert nach Health Score</div>
+      </div>
+      <a href="#" onclick="navTo('creators');return false" style="font-size:13px">Alle ansehen →</a>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Creator</th><th>Platform</th><th>Health</th><th>View Rate</th><th>Sentiment</th><th>Posts/W</th><th>Compliance</th><th>Last Post</th><th>Status</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${[...CREATORS].sort((a,b)=>b.health_score-a.health_score).map(c=>{
+          const postsOk = c.posts_this_week>=3?'ok':c.posts_this_week>=1?'warn':'bad';
+          const postsIcon = postsOk==='ok'?'✅':postsOk==='warn'?'⚠️':'❌';
+          return `<tr style="cursor:pointer" onclick="openPanel(${c.id})">
+            <td><div class="creator-cell"><img class="avatar" src="${c.avatar}"><div><div class="name">${c.name}</div><div class="handle">${c.handle}</div></div></div></td>
+            <td>${platformBadge(c.platform)}</td>
+            <td><div class="health-bar"><span class="health-num" style="color:${c.health_score>=80?'var(--green)':c.health_score>=50?'var(--amber)':'var(--red)'}">${c.health_score}</span><div class="health-track"><div class="health-fill ${healthCls(c.health_score)}" style="width:${c.health_score}%"></div></div></div></td>
+            <td class="mono">${c.view_rate}% <span style="color:${c.view_rate>=7?'var(--green)':'var(--red)'};font-size:11px">${c.view_rate>=7?'↑':'↓'}</span></td>
+            <td>${sentimentDot(c.sentiment_score)}<span class="mono">${c.sentiment_score}%</span></td>
+            <td class="cell-status"><span class="${postsOk}">${c.posts_this_week}/3 ${postsIcon}</span></td>
+            <td><span class="mono" style="color:${c.compliance>=80?'var(--green)':c.compliance>=50?'var(--amber)':'var(--red)'};font-weight:600">${c.compliance}%</span></td>
+            <td class="sub">${c.last_post}</td>
+            <td>${statusBadge(c.status)}</td>
+            <td><a href="#" onclick="event.stopPropagation();openPanel(${c.id});return false" style="font-size:13px">Details →</a></td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div class="card-title">Letzte Alerts</div>
+      <a href="#" onclick="navTo('alerts');return false" style="font-size:12.5px">Alle Alerts ansehen →</a>
+    </div>
+    ${ALERTS.slice(0,3).map(a=>{
+      const c = CREATORS.find(x=>x.id===a.creator_id);
+      const sev = a.severity==='critical'?'crit':a.severity==='warning'?'warn':'info';
+      return `<div class="alert-row ${a.read?'read':'unread '+sev}" style="margin-bottom:8px;cursor:pointer" onclick="openPanel(${c.id})">
+        <div class="alert-dot ${sev}"></div>
+        <img class="avatar" src="${c.avatar}">
+        <div class="alert-body">
+          <div class="alert-meta"><span class="alert-creator">${c.name}</span> · ${c.handle}<span style="margin-left:auto">${a.time}</span></div>
+          <div class="alert-msg">${a.message}</div>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>
+  `;
+}
+
+/* ============ CREATORS ============ */
+function renderCreators(){
+  const filtered = CREATORS.filter(c=>{
+    if(!creatorSearch) return true;
+    const q = creatorSearch.toLowerCase();
+    return c.name.toLowerCase().includes(q) || c.handle.toLowerCase().includes(q) || c.niche.toLowerCase().includes(q);
+  });
+  return `
+  <div class="page-head">
+    <div>
+      <div class="page-title">Creator Portfolio</div>
+      <div class="page-sub">${filtered.length} von ${CREATORS.length} Creators · automatisches Monitoring aktiv</div>
+    </div>
+    <div class="flex">
+      <div class="search-input">
+        <span class="ico"><svg class="ic" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span>
+        <input id="cSearch" placeholder="Nach Name, Handle oder Nische suchen…" value="${creatorSearch}" oninput="creatorSearch=this.value;updateCreatorGrid()">
+      </div>
+      <button class="btn btn-primary" onclick="openAddCreator()"><svg class="ic" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Creator hinzufügen</button>
+    </div>
+  </div>
+
+  <div id="cGrid">${renderCreatorGrid(filtered)}</div>
+  `;
+}
+function updateCreatorGrid(){
+  const filtered = CREATORS.filter(c=>{
+    if(!creatorSearch) return true;
+    const q = creatorSearch.toLowerCase();
+    return c.name.toLowerCase().includes(q) || c.handle.toLowerCase().includes(q) || c.niche.toLowerCase().includes(q);
+  });
+  document.getElementById('cGrid').innerHTML = renderCreatorGrid(filtered);
+}
+function renderCreatorGrid(list){
+  if(list.length===0){
+    return `<div class="empty">Keine Creator gefunden. Anderer Suchbegriff versuchen.</div>`;
+  }
+  return `<div class="cgrid">${list.map(c=>{
+    const flags = c.red_flags.slice(0,3).map(f=>`<span class="badge badge-red" style="font-size:11px">⚠ ${FLAG_LABELS[f]||f}</span>`).join('');
+    const postsLabel = c.posts_this_week>=3?'✅':c.posts_this_week>=1?'⚠️':'❌';
+    return `
+    <div class="ccard">
+      <div class="ccard-top">
+        <img class="avatar" src="${c.avatar}">
+        <div style="flex:1;min-width:0">
+          <div class="flex" style="gap:8px;align-items:center"><span class="ccard-name">${c.name}</span>${platformBadge(c.platform)}${statusBadge(c.status)}</div>
+          <div class="ccard-handle">${c.handle} · ${fmt(c.followers)} Follower</div>
+          <div class="ccard-niche">${c.niche}</div>
+        </div>
+        ${ring(c.health_score)}
+      </div>
+
+      <div class="stat-pills">
+        <div class="stat-pill"><div class="v" style="color:${c.view_rate>=7?'var(--green)':'var(--amber)'}">${c.view_rate}%</div><div class="l">View Rate</div></div>
+        <div class="stat-pill"><div class="v">${c.engagement_rate}%</div><div class="l">Engagement</div></div>
+        <div class="stat-pill"><div class="v" style="color:${c.sentiment_score>=80?'var(--green)':c.sentiment_score>=60?'var(--amber)':'var(--red)'}">${c.sentiment_score}%</div><div class="l">Sentiment</div></div>
+      </div>
+
+      <div>
+        <div class="flex-between" style="font-size:12px;margin-bottom:5px"><span class="sub">Compliance</span><span class="mono" style="font-weight:600">${c.compliance}% · ${c.posts_this_week}/3 Posts ${postsLabel}</span></div>
+        <div class="progress"><div class="progress-bar ${healthCls(c.compliance)}" style="width:${c.compliance}%"></div></div>
+      </div>
+
+      <div class="last-post">
+        <img src="${c.last_post_img}" onerror="this.style.background='#F4F4F5';this.src='';">
+        <div style="flex:1;min-width:0">
+          <div class="cap">${c.last_caption}</div>
+          <div class="time">${c.last_post} · ${fmt(c.likes)} Likes · ${fmt(c.post_comments)} Comments</div>
+        </div>
+      </div>
+
+      ${flags?`<div class="red-flags">${flags}</div>`:''}
+
+      <button class="btn btn-primary" style="width:100%" onclick="openPanel(${c.id})">Details ansehen →</button>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+/* ============ ALERTS ============ */
+function renderAlerts(){
+  const counts = {
+    all: ALERTS.length,
+    critical: ALERTS.filter(a=>a.severity==='critical').length,
+    warning: ALERTS.filter(a=>a.severity==='warning').length,
+    info: ALERTS.filter(a=>a.severity==='info').length
+  };
+  let filtered = ALERTS;
+  if(alertFilter!=='all') filtered = ALERTS.filter(a=>a.severity===alertFilter);
+  const unread = ALERTS.filter(a=>!a.read).length;
+  return `
+  <div class="page-head">
+    <div>
+      <div class="page-title">Alert Center</div>
+      <div class="page-sub">${unread} ungelesene Alerts · automatisches Monitoring</div>
+    </div>
+    ${unread>0?`<button class="btn btn-secondary" onclick="markAllRead()">Alle als gelesen markieren</button>`:''}
+  </div>
+
+  <div class="alert-tabs">
+    <div class="tab ${alertFilter==='all'?'active':''}" onclick="alertFilter='all';navTo('alerts')">Alle <span class="badge badge-neutral" style="margin-left:6px">${counts.all}</span></div>
+    <div class="tab ${alertFilter==='critical'?'active':''}" onclick="alertFilter='critical';navTo('alerts')">Kritisch <span class="badge badge-red" style="margin-left:6px">${counts.critical}</span></div>
+    <div class="tab ${alertFilter==='warning'?'active':''}" onclick="alertFilter='warning';navTo('alerts')">Warnung <span class="badge badge-amber" style="margin-left:6px">${counts.warning}</span></div>
+    <div class="tab ${alertFilter==='info'?'active':''}" onclick="alertFilter='info';navTo('alerts')">Info <span class="badge badge-blue" style="margin-left:6px">${counts.info}</span></div>
+  </div>
+
+  <div id="alertList">
+    ${filtered.map(a=>{
+      const c = CREATORS.find(x=>x.id===a.creator_id);
+      const sev = a.severity==='critical'?'crit':a.severity==='warning'?'warn':'info';
+      return `<div class="alert-row ${a.read?'read':'unread '+sev}" data-alert="${a.id}">
+        <div class="alert-dot ${sev}"></div>
+        <img class="avatar" src="${c.avatar}">
+        <div class="alert-body">
+          <div class="alert-meta"><span class="alert-creator">${c.name}</span> · ${c.handle}<span style="margin-left:auto">${a.time}</span></div>
+          <div class="alert-msg">${a.message}</div>
+          <div class="alert-actions">
+            <button class="btn btn-secondary btn-sm" onclick="openPanel(${c.id})">Creator ansehen</button>
+            ${!a.read?`<button class="btn btn-ghost btn-sm" onclick="markAlertRead(${a.id})">Als gelesen markieren</button>`:''}
+          </div>
+        </div>
+        <div class="alert-close" onclick="markAlertRead(${a.id})" title="Schließen">×</div>
+      </div>`;
+    }).join('') || '<div class="empty">Keine Alerts in dieser Kategorie.</div>'}
+  </div>
+
+  <div class="info-card">
+    <div class="title">ℹ️ So funktioniert das Monitoring</div>
+    <div style="font-size:13px;color:#1E40AF;margin-bottom:8px">Täglich um 08:00 Uhr werden alle Creator automatisch gecheckt:</div>
+    <ul>
+      <li>Apify scannt Instagram & TikTok auf neue Posts & Stories</li>
+      <li>Claude AI analysiert Kommentare auf Sentiment & Kaufabsicht</li>
+      <li>Hashtag-, Mention- & Compliance-Checks laufen pro Post</li>
+      <li>Bei Verstößen oder Red Flags erscheinen Alerts hier — Slack & Email Benachrichtigung optional</li>
+    </ul>
+  </div>
+  `;
+}
+function markAlertRead(id){
+  const a = ALERTS.find(x=>x.id===id);
+  if(a) a.read = true;
+  updateBadges();
+  navTo('alerts');
+  showToast('Als gelesen markiert');
+}
+function markAllRead(){
+  ALERTS.forEach(a=>a.read=true);
+  updateBadges();
+  navTo('alerts');
+  showToast('Alle Alerts als gelesen markiert');
+}
+function updateBadges(){
+  const crit = ALERTS.filter(a=>a.severity==='critical'&&!a.read).length;
+  const badges = document.querySelectorAll('.bell-badge, .tab[data-tab="alerts"] .tab-badge');
+  badges.forEach(b=>{
+    if(crit>0){b.textContent=crit;b.style.display='';}
+    else{b.style.display='none';}
+  });
+}
+
+/* ============ PANEL ============ */
+function openPanel(id){
+  panelCreator = id;
+  panelTab = 'overview';
+  renderPanel();
+  document.getElementById('panel-backdrop').classList.add('open');
+  document.getElementById('panel').classList.add('open');
+}
+function closePanel(){
+  document.getElementById('panel-backdrop').classList.remove('open');
+  document.getElementById('panel').classList.remove('open');
+}
+function setPanelTab(t){
+  panelTab = t;
+  renderPanel();
+}
+function renderPanel(){
+  const c = CREATORS.find(x=>x.id===panelCreator);
+  if(!c) return;
+  const panel = document.getElementById('panel');
+  panel.innerHTML = `
+    <div class="panel-head">
+      <div class="top-row">
+        <div class="creator-block">
+          <img class="avatar" src="${c.avatar}">
+          <div>
+            <div class="flex" style="gap:8px">${platformBadge(c.platform)}${statusBadge(c.status)}</div>
+            <div class="name" style="margin-top:6px">${c.name}</div>
+            <div class="handle">${c.handle} · ${fmt(c.followers)} Follower</div>
+          </div>
+        </div>
+        <div class="flex" style="gap:12px;align-items:center">
+          ${ringLg(c.health_score,'Health')}
+          <div class="panel-close" onclick="closePanel()" title="Schließen">×</div>
+        </div>
+      </div>
+      <div class="panel-tabs">
+        <div class="panel-tab ${panelTab==='overview'?'active':''}" onclick="setPanelTab('overview')">Übersicht</div>
+        <div class="panel-tab ${panelTab==='post'?'active':''}" onclick="setPanelTab('post')">Letzter Post</div>
+        <div class="panel-tab ${panelTab==='sentiment'?'active':''}" onclick="setPanelTab('sentiment')">Kommentare & Sentiment</div>
+        <div class="panel-tab ${panelTab==='ai'?'active':''}" onclick="setPanelTab('ai')">AI Analyse</div>
+      </div>
+    </div>
+    <div class="panel-body">
+      ${panelTab==='overview'?renderPanelOverview(c):''}
+      ${panelTab==='post'?renderPanelPost(c):''}
+      ${panelTab==='sentiment'?renderPanelSentiment(c):''}
+      ${panelTab==='ai'?renderPanelAI(c):''}
+    </div>
+  `;
+}
+function renderPanelOverview(c){
+  return `
+    <div class="stat-row"><span class="l">Follower</span><span class="v">${fmt(c.followers)}</span></div>
+    <div class="stat-row"><span class="l">View Rate</span><span class="v" style="color:${c.view_rate>=7?'var(--green)':'var(--amber)'}">${c.view_rate}% ${c.view_rate>=7?'↑':'↓'}</span></div>
+    <div class="stat-row"><span class="l">Engagement Rate</span><span class="v">${c.engagement_rate}%</span></div>
+    <div class="stat-row"><span class="l">Sentiment Score</span><span class="v" style="color:${c.sentiment_score>=80?'var(--green)':c.sentiment_score>=60?'var(--amber)':'var(--red)'}">${c.sentiment_score}%</span></div>
+    <div class="stat-row"><span class="l">Posts diese Woche</span><span class="v">${c.posts_this_week}/3 ${c.posts_this_week>=3?'✅':c.posts_this_week>=1?'⚠️':'❌'}</span></div>
+    <div class="stat-row"><span class="l">Compliance</span><span class="v" style="color:${c.compliance>=80?'var(--green)':c.compliance>=50?'var(--amber)':'var(--red)'}">${c.compliance}%</span></div>
+    <div class="stat-row"><span class="l">Nische</span><span class="v" style="font-family:'DM Sans',sans-serif">${c.niche}</span></div>
+
+    <div class="agree-card">
+      <h4>Vereinbarung mit buah</h4>
+      <div class="stat-row"><span class="l">Pflicht-Hashtag</span><span class="v">#buah</span></div>
+      <div class="stat-row"><span class="l">Pflicht-Mention</span><span class="v">@buah_de</span></div>
+      <div class="stat-row"><span class="l">Posting-Frequenz</span><span class="v">3x / Woche</span></div>
+      <div class="stat-row"><span class="l">View Rate Ziel</span><span class="v">≥ 7%</span></div>
+      <div class="stat-row"><span class="l">Sentiment Ziel</span><span class="v">≥ 70%</span></div>
+      <div class="stat-row"><span class="l">Forbidden</span><span class="v" style="color:var(--red)">@naturebox @snackbox</span></div>
+    </div>
+
+    <div class="copy-code">
+      <div>
+        <div style="font-size:11px;color:#9A3412;text-transform:uppercase;letter-spacing:0.05em;font-weight:600;margin-bottom:2px">Discount Code</div>
+        <span class="code">${c.discount_code}</span>
+      </div>
+      <button onclick="showToast('Code kopiert')" style="margin-left:auto;cursor:pointer">📋 Kopieren</button>
+    </div>
+
+    <div class="flex" style="gap:8px;margin-top:18px">
+      <button class="btn btn-primary" style="flex:1" onclick="showToast('Reminder gesendet an ${c.name}')">📧 Reminder senden</button>
+      <button class="btn btn-secondary" style="flex:1" onclick="openGoalsModal(${c.id})">⚙ Goals bearbeiten</button>
+    </div>
+  `;
+}
+function renderPanelPost(c){
+  return `
+    <img class="post-img" src="${c.last_post_img}" onerror="this.style.background='#F4F4F5'">
+    <div class="sub" style="font-size:12px;margin-top:10px">Gepostet ${c.last_post} · ${platformBadge(c.platform)}</div>
+    <p style="font-size:14px;line-height:1.55;margin-top:12px">${c.last_caption}</p>
+
+    <div class="divider"></div>
+
+    <div class="agree-card" style="margin-top:0">
+      <h4>Compliance-Check</h4>
+      <div class="check-row">
+        <span class="ico ${c.hashtag_ok?'ok':'bad'}">${c.hashtag_ok?'✓':'✗'}</span>
+        <span style="flex:1">Hashtag <strong>#buah</strong> verwendet</span>
+        <span class="sub" style="font-size:12px">${c.hashtag_ok?'Vorhanden':'Fehlt'}</span>
+      </div>
+      <div class="check-row">
+        <span class="ico ${c.mention_ok?'ok':'bad'}">${c.mention_ok?'✓':'✗'}</span>
+        <span style="flex:1">Brand <strong>@buah_de</strong> erwähnt</span>
+        <span class="sub" style="font-size:12px">${c.mention_ok?'Vorhanden':'Fehlt'}</span>
+      </div>
+      <div class="check-row">
+        <span class="ico ${!c.competitor?'ok':'bad'}">${!c.competitor?'✓':'✗'}</span>
+        <span style="flex:1">Kein Konkurrent erwähnt</span>
+        <span class="sub" style="font-size:12px">${!c.competitor?'Sauber':'@naturebox detected'}</span>
+      </div>
+    </div>
+
+    <div class="grid grid-3" style="gap:10px;margin-top:14px">
+      <div class="stat-pill"><div class="v">${fmt(c.likes)}</div><div class="l">Likes</div></div>
+      <div class="stat-pill"><div class="v">${fmt(c.post_comments)}</div><div class="l">Comments</div></div>
+      <div class="stat-pill"><div class="v">${fmt(c.views)}</div><div class="l">Est. Views</div></div>
+    </div>
+  `;
+}
+function renderPanelSentiment(c){
+  const pos = Math.round(c.sentiment_score);
+  const neg = Math.round((100-c.sentiment_score)*0.55);
+  const neu = Math.max(0, 100 - pos - neg);
+  const label = c.sentiment_score>=85?'Sehr positiv':c.sentiment_score>=70?'Positiv':c.sentiment_score>=50?'Gemischt':'Negativ';
+  return `
+    <div class="flex" style="gap:18px;align-items:center;padding:14px;background:var(--bg-base);border:1px solid var(--border-subtle);border-radius:var(--radius-md)">
+      ${ringLg(c.sentiment_score)}
+      <div>
+        <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-tertiary);font-weight:600">Sentiment Score</div>
+        <div class="serif" style="font-size:22px;margin-top:4px">${label}</div>
+        <div class="sub" style="font-size:12px;margin-top:2px">basierend auf ${c.comments.length} analysierten Kommentaren</div>
+      </div>
+    </div>
+
+    <div class="sent-bars">
+      <div class="sent-bar">
+        <span class="sub">Positiv</span>
+        <div class="sent-track"><div class="sent-fill" style="width:${pos}%;background:var(--green)"></div></div>
+        <span class="mono" style="font-weight:600;color:var(--green)">${pos}%</span>
+      </div>
+      <div class="sent-bar">
+        <span class="sub">Neutral</span>
+        <div class="sent-track"><div class="sent-fill" style="width:${neu}%;background:var(--text-tertiary)"></div></div>
+        <span class="mono" style="font-weight:600">${neu}%</span>
+      </div>
+      <div class="sent-bar">
+        <span class="sub">Negativ</span>
+        <div class="sent-track"><div class="sent-fill" style="width:${neg}%;background:var(--red)"></div></div>
+        <span class="mono" style="font-weight:600;color:var(--red)">${neg}%</span>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h4 style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-tertiary);margin-bottom:6px;font-weight:600">Top Kommentare</h4>
+    ${c.comments.map(co=>`
+      <div class="comment">
+        <img class="avatar" src="${co.avatar}">
+        <div class="comment-body">
+          <div class="comment-user">@${co.user} <span class="badge ${co.sentiment==='positive'?'badge-green':co.sentiment==='negative'?'badge-red':'badge-neutral'}" style="font-size:10px">${co.sentiment==='positive'?'positiv':co.sentiment==='negative'?'negativ':'neutral'}</span></div>
+          <div class="comment-text">${co.text}</div>
+        </div>
+      </div>
+    `).join('')}
+
+    <div class="ai-box">
+      <div class="ai-icon">AI</div>
+      <div class="ai-body">
+        <div class="ai-title">Claude AI · Sentiment Summary</div>
+        <p>${c.ai_summary}</p>
+      </div>
+    </div>
+  `;
+}
+function renderPanelAI(c){
+  const riskLabel = c.risk==='low'?'Niedrig':c.risk==='med'?'Mittel':'Hoch';
+  return `
+    <div class="ai-box" style="margin-top:0">
+      <div class="ai-icon">AI</div>
+      <div class="ai-body">
+        <div class="ai-title">Claude AI · Wochenanalyse</div>
+        <p>${c.ai_summary}</p>
+      </div>
+    </div>
+
+    <h4 style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-tertiary);margin:22px 0 10px;font-weight:600">Empfehlungen</h4>
+    <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px">
+      ${c.recommendations.map(r=>`
+        <li style="display:flex;gap:10px;align-items:flex-start;padding:12px 14px;background:var(--bg-base);border:1px solid var(--border-subtle);border-radius:var(--radius-md);font-size:13.5px;line-height:1.5">
+          <span style="color:var(--accent);font-weight:700;flex-shrink:0">→</span>
+          <span>${r}</span>
+        </li>
+      `).join('')}
+    </ul>
+
+    <h4 style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-tertiary);margin:22px 0 10px;font-weight:600">Risiko-Einschätzung</h4>
+    <div class="risk-row">
+      <span class="risk-dot ${c.risk}"></span>
+      <span style="font-weight:600">${riskLabel}</span>
+      <span class="sub" style="margin-left:auto;font-size:12.5px">${c.risk==='low'?'Stabil — weiter beobachten':c.risk==='med'?'Aufmerksamkeit nötig — Reminder senden':'Sofortiges Eingreifen erforderlich'}</span>
+    </div>
+
+    <div class="flex" style="gap:8px;margin-top:18px">
+      <button class="btn ${c.risk==='high'?'btn-danger':'btn-primary'}" style="flex:1" onclick="showToast('${c.risk==='high'?'Eskalation gestartet':'Reminder gesendet'}')">${c.risk==='high'?'🚨 Eskalieren':'📧 Reminder senden'}</button>
+      <button class="btn btn-secondary" style="flex:1">📄 Report exportieren</button>
+    </div>
+  `;
+}
+
+/* ============ TOAST ============ */
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.innerHTML = '<svg class="ic" viewBox="0 0 16 16" fill="none" style="color:#22C55E"><path d="M3 8l3 3 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>' + msg;
+  t.classList.add('show');
+  clearTimeout(window.toastTimer);
+  window.toastTimer = setTimeout(()=>t.classList.remove('show'), 2400);
+}
+
+/* ============ ADD CREATOR MODAL ============ */
+let addState = {step:1, username:'', platform:'Instagram', searching:false, found:false,
+  hashtags:['buah','gefriergetrocknet'], mentions:['buah_de'], competitors:['naturebox','snackbox'],
+  freq:'3x/Woche', vr:7, sent:70, budget:1500};
+
+const FAKE_FOUND = {
+  name:"Hannah Lechner", handle:"hannah.healthybites",
+  avatar:"https://i.pravatar.cc/96?img=26",
+  followers:81400, view_rate:7.9, engagement:4.4, fake:2.8, deals:1,
+  niche:"Healthy Food & Mom-Life", city:"Graz, AT",
+  ai_score:82, ai_note:"Solider Account mit organischem Wachstum (+9% in 30 Tagen). Audience-Demographie passt perfekt zu buah's Familien-Positionierung. Keine Konkurrenz-Kooperationen in den letzten 90 Tagen."
+};
+
+function openAddCreator(){
+  addState = {step:1, username:'', platform:'Instagram', searching:false, found:false,
+    hashtags:['buah','gefriergetrocknet'], mentions:['buah_de'], competitors:['naturebox','snackbox'],
+    freq:'3x/Woche', vr:7, sent:70, budget:1500};
+  renderAddCreator();
+  document.getElementById('add-modal').classList.add('open');
+}
+function closeAddCreator(){
+  document.getElementById('add-modal').classList.remove('open');
+}
+function renderAddCreator(){
+  const wrap = document.getElementById('add-modal');
+  wrap.innerHTML = `
+    <div class="goals-backdrop" onclick="closeAddCreator()"></div>
+    <div class="goals-dialog" style="width:600px">
+      <div class="goals-head">
+        <div>
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-tertiary);font-weight:600">Creator zum Portfolio hinzufügen</div>
+          <div style="font-weight:600;font-size:17px;margin-top:4px">Schritt ${addState.step} von 2 — ${addState.step===1?'Suchen & Verifizieren':'Goals & Vereinbarung'}</div>
+        </div>
+        <div class="panel-close" onclick="closeAddCreator()">×</div>
+      </div>
+
+      <div class="add-steps">
+        <div class="add-step ${addState.step>=1?'active':''} ${addState.step>1?'done':''}"><span class="num">${addState.step>1?'✓':'1'}</span> Suchen</div>
+        <div class="add-sep"></div>
+        <div class="add-step ${addState.step>=2?'active':''}"><span class="num">2</span> Goals</div>
+      </div>
+
+      <div class="goals-body">
+        ${addState.step===1?renderAddStep1():renderAddStep2()}
+      </div>
+
+      <div class="goals-foot">
+        ${addState.step===1?`
+          <button class="btn btn-ghost" onclick="closeAddCreator()">Abbrechen</button>
+          <button class="btn btn-primary" onclick="goToStep2()" ${!addState.found?'disabled style="opacity:.45;cursor:not-allowed"':''}>Weiter zu Goals →</button>
+        `:`
+          <button class="btn btn-secondary" onclick="addState.step=1;renderAddCreator()">← Zurück</button>
+          <button class="btn btn-primary" onclick="finalizeAddCreator()">Zum Portfolio hinzufügen ✓</button>
+        `}
+      </div>
+    </div>
+  `;
+}
+function renderAddStep1(){
+  return `
+    <div class="goals-field">
+      <label>Plattform & Username</label>
+      <div class="flex" style="gap:8px">
+        <select class="input" style="width:140px" onchange="addState.platform=this.value">
+          <option ${addState.platform==='Instagram'?'selected':''}>Instagram</option>
+          <option ${addState.platform==='TikTok'?'selected':''}>TikTok</option>
+        </select>
+        <input class="input" placeholder="@username" value="${addState.username}" oninput="addState.username=this.value" style="flex:1" onkeydown="if(event.key==='Enter')simulateCreatorSearch()">
+        <button class="btn btn-primary" onclick="simulateCreatorSearch()">Suchen</button>
+      </div>
+      <div class="sub" style="font-size:12px;margin-top:6px">Wir prüfen Follower, Engagement, Fake-Follower-Rate und vergleichen mit deinen Brand-Kriterien.</div>
+    </div>
+
+    <div id="search-result-area">
+      ${addState.searching?`
+        <div class="search-loading">
+          <div class="mini-spinner"></div>
+          <div>
+            <div style="font-weight:600;font-size:13.5px">Profil wird geprüft…</div>
+            <div class="sub" style="font-size:12px">Apify scannt Profil · Claude AI Vetting läuft</div>
+          </div>
+        </div>
+      `:''}
+      ${addState.found?renderFoundCard():''}
+    </div>
+  `;
+}
+function renderFoundCard(){
+  const f = FAKE_FOUND;
+  return `
+    <div class="found-card">
+      <div class="flex" style="gap:14px;margin-bottom:14px">
+        <img class="avatar" style="width:54px;height:54px;border-radius:50%;object-fit:cover" src="${f.avatar}">
+        <div style="flex:1;min-width:0">
+          <div class="flex" style="gap:8px;align-items:center"><span style="font-weight:600;font-size:15px">${f.name}</span><span class="badge badge-green" style="font-size:10px">Verified</span></div>
+          <div class="sub" style="font-size:12.5px">@${f.handle} · ${addState.platform} · ${f.city}</div>
+          <div class="sub" style="font-size:12px;margin-top:3px">${f.niche}</div>
+        </div>
+        <div style="text-align:center">
+          <div class="mono" style="font-size:24px;font-weight:600;color:var(--green);line-height:1">${f.ai_score}</div>
+          <div class="sub" style="font-size:10px;text-transform:uppercase;letter-spacing:0.05em;margin-top:2px">AI Vetting</div>
+        </div>
+      </div>
+
+      <div class="grid grid-3" style="gap:8px;margin-bottom:14px">
+        <div class="stat-pill"><div class="v">${fmt(f.followers)}</div><div class="l">Follower</div></div>
+        <div class="stat-pill"><div class="v" style="color:var(--green)">${f.view_rate}%</div><div class="l">View Rate ✓</div></div>
+        <div class="stat-pill"><div class="v" style="color:var(--green)">${f.engagement}%</div><div class="l">Engagement ✓</div></div>
+        <div class="stat-pill"><div class="v" style="color:var(--green)">${f.fake}%</div><div class="l">Fake-Follower</div></div>
+        <div class="stat-pill"><div class="v">${f.deals}</div><div class="l">Recent Deals</div></div>
+        <div class="stat-pill"><div class="v" style="color:var(--green)">✓</div><div class="l">Keine Konkurrenz</div></div>
+      </div>
+
+      <div class="ai-box" style="margin-top:0">
+        <div class="ai-icon">AI</div>
+        <div class="ai-body">
+          <div class="ai-title">Claude AI · Vetting Summary</div>
+          <p>${f.ai_note}</p>
+        </div>
+      </div>
+    </div>
+  `;
+}
+function simulateCreatorSearch(){
+  if(!addState.username.trim()){addState.username='hannah.healthybites';}
+  addState.searching = true;
+  addState.found = false;
+  renderAddCreator();
+  setTimeout(()=>{
+    addState.searching = false;
+    addState.found = true;
+    renderAddCreator();
+  }, 1100);
+}
+function goToStep2(){
+  if(!addState.found)return;
+  addState.step = 2;
+  renderAddCreator();
+}
+function renderAddStep2(){
+  const f = FAKE_FOUND;
+  return `
+    <div class="flex" style="gap:12px;padding:10px;background:var(--bg-base);border:1px solid var(--border-subtle);border-radius:var(--radius-md);margin-bottom:18px">
+      <img src="${f.avatar}" style="width:40px;height:40px;border-radius:50%;object-fit:cover">
+      <div style="flex:1"><div style="font-weight:600;font-size:14px">${f.name}</div><div class="sub" style="font-size:12px">@${f.handle} · ${platformBadge(addState.platform)}</div></div>
+      <span class="badge badge-green">AI ${f.ai_score}/100</span>
+    </div>
+
+    <div class="goals-field">
+      <label>Mindest-Posting-Frequenz</label>
+      <select class="input" onchange="addState.freq=this.value">
+        ${['1x/Woche','2x/Woche','3x/Woche','4x/Woche','Täglich'].map(x=>`<option ${x===addState.freq?'selected':''}>${x}</option>`).join('')}
+      </select>
+    </div>
+
+    <div class="goals-field">
+      <label>Pflicht-Hashtags</label>
+      <div class="tag-input">
+        ${addState.hashtags.map(h=>`<span class="tag">#${h}<span class="x" onclick="removeAddTag(this,'hashtags','${h}')">×</span></span>`).join('')}
+        <input placeholder="Hashtag + Enter" onkeydown="addAddTagKey(event,'hashtags')">
+      </div>
+    </div>
+
+    <div class="goals-field">
+      <label>Pflicht-Mentions</label>
+      <div class="tag-input">
+        ${addState.mentions.map(m=>`<span class="tag">@${m}<span class="x" onclick="removeAddTag(this,'mentions','${m}')">×</span></span>`).join('')}
+        <input placeholder="Mention + Enter" onkeydown="addAddTagKey(event,'mentions')">
+      </div>
+    </div>
+
+    <div class="goals-field">
+      <label>Verbotene Wettbewerber</label>
+      <div class="tag-input">
+        ${addState.competitors.map(m=>`<span class="tag tag-red">@${m}<span class="x" onclick="removeAddTag(this,'competitors','${m}')">×</span></span>`).join('')}
+        <input placeholder="Konkurrenz + Enter" onkeydown="addAddTagKey(event,'competitors')">
+      </div>
+    </div>
+
+    <div class="grid grid-2" style="gap:12px">
+      <div class="goals-field"><label>Min. View Rate (%)</label><input class="input" type="number" value="${addState.vr}" step="0.5" oninput="addState.vr=parseFloat(this.value)||0"></div>
+      <div class="goals-field"><label>Min. Sentiment (%)</label><input class="input" type="number" value="${addState.sent}" step="5" oninput="addState.sent=parseFloat(this.value)||0"></div>
+    </div>
+
+    <div class="goals-field">
+      <label>Monatliches Budget (€)</label>
+      <input class="input" type="number" value="${addState.budget}" step="100" oninput="addState.budget=parseInt(this.value)||0">
+    </div>
+
+    <div class="info-box-sm">ℹ️ Nach dem Hinzufügen startet das Monitoring automatisch. Erste Daten erscheinen innerhalb von 24h.</div>
+  `;
+}
+function removeAddTag(el,key,val){
+  addState[key] = addState[key].filter(x=>x!==val);
+  el.parentElement.remove();
+}
+function addAddTagKey(e,key){
+  if(e.key!=='Enter')return;
+  e.preventDefault();
+  const v = e.target.value.replace(/^[#@]/,'').trim();
+  if(!v)return;
+  if(addState[key].includes(v)){e.target.value='';return;}
+  addState[key].push(v);
+  const prefix = key==='hashtags'?'#':'@';
+  const cls = key==='competitors'?' tag-red':'';
+  e.target.insertAdjacentHTML('beforebegin',`<span class="tag${cls}">${prefix}${v}<span class="x" onclick="removeAddTag(this,'${key}','${v}')">×</span></span>`);
+  e.target.value='';
+}
+function finalizeAddCreator(){
+  const f = FAKE_FOUND;
+  const newId = Math.max(...CREATORS.map(c=>c.id)) + 1;
+  const newCreator = {
+    id:newId, name:f.name, handle:'@'+f.handle, platform:addState.platform,
+    avatar:f.avatar, followers:f.followers, niche:f.niche, status:"active",
+    health_score:f.ai_score, view_rate:f.view_rate, engagement_rate:f.engagement,
+    sentiment_score:88, last_post:"noch keine Daten",
+    last_post_img:"https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400&h=400&fit=crop",
+    posts_this_week:0, compliance:100, discount_code:f.handle.substring(0,5).toUpperCase()+'10',
+    red_flags:[], last_caption:"— Monitoring startet beim nächsten Post —",
+    hashtag_ok:true, mention_ok:true, competitor:false,
+    likes:0, post_comments:0, views:0, comments:[],
+    ai_summary:"Creator wurde gerade hinzugefügt — Monitoring läuft an. Erste vollständige Analyse innerhalb von 24h verfügbar.",
+    recommendations:["Briefing-Dokument an Creator senden","Discount-Code aktivieren","Erstes Check-in nach 7 Tagen einplanen"],
+    risk:"low"
+  };
+  CREATORS.push(newCreator);
+  CREATOR_GOALS[newId] = {
+    frequency: addState.freq, hashtags: [...addState.hashtags], mentions: [...addState.mentions],
+    competitors: [...addState.competitors], viewRate: addState.vr, engagement: 4,
+    sentiment: addState.sent, budget: addState.budget
+  };
+  closeAddCreator();
+  showToast('Creator '+f.name+' zum Portfolio hinzugefügt');
+  setTimeout(()=>navTo('creators'), 400);
+}
+
+/* ============ EDIT GOALS MODAL ============ */
+const CREATOR_GOALS = {};
+CREATORS.forEach(c=>{
+  CREATOR_GOALS[c.id] = {
+    frequency: '3x/Woche',
+    hashtags: ['buah','gefriergetrocknet'],
+    mentions: ['buah_de'],
+    competitors: ['naturebox','snackbox'],
+    viewRate: 7,
+    engagement: 4,
+    sentiment: 70,
+    budget: 1500
+  };
+});
+
+function openGoalsModal(id){
+  const c = CREATORS.find(x=>x.id===id);
+  const g = CREATOR_GOALS[id];
+  const wrap = document.getElementById('goals-modal');
+  wrap.innerHTML = `
+    <div class="goals-backdrop" onclick="closeGoalsModal()"></div>
+    <div class="goals-dialog">
+      <div class="goals-head">
+        <div>
+          <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-tertiary);font-weight:600">Goals bearbeiten</div>
+          <div style="font-weight:600;font-size:17px;margin-top:4px">${c.name}</div>
+          <div class="sub" style="font-size:12.5px">${c.handle} · ${c.niche}</div>
+        </div>
+        <div class="panel-close" onclick="closeGoalsModal()">×</div>
+      </div>
+      <div class="goals-body">
+
+        <div class="goals-field">
+          <label>Mindest-Posting-Frequenz</label>
+          <select class="input" id="g-freq">
+            ${['1x/Woche','2x/Woche','3x/Woche','4x/Woche','Täglich'].map(f=>`<option ${f===g.frequency?'selected':''}>${f}</option>`).join('')}
+          </select>
+        </div>
+
+        <div class="goals-field">
+          <label>Pflicht-Hashtags</label>
+          <div class="tag-input">
+            ${g.hashtags.map(h=>`<span class="tag">#${h}<span class="x" onclick="removeGoalTag(this,${id},'hashtags','${h}')">×</span></span>`).join('')}
+            <input placeholder="Hashtag hinzufügen + Enter" onkeydown="addGoalTagKey(event,${id},'hashtags')">
+          </div>
+        </div>
+
+        <div class="goals-field">
+          <label>Pflicht-Mentions</label>
+          <div class="tag-input">
+            ${g.mentions.map(m=>`<span class="tag">@${m}<span class="x" onclick="removeGoalTag(this,${id},'mentions','${m}')">×</span></span>`).join('')}
+            <input placeholder="Mention hinzufügen + Enter" onkeydown="addGoalTagKey(event,${id},'mentions')">
+          </div>
+        </div>
+
+        <div class="goals-field">
+          <label>Verbotene Wettbewerber</label>
+          <div class="tag-input">
+            ${g.competitors.map(m=>`<span class="tag tag-red">@${m}<span class="x" onclick="removeGoalTag(this,${id},'competitors','${m}')">×</span></span>`).join('')}
+            <input placeholder="Konkurrenz hinzufügen + Enter" onkeydown="addGoalTagKey(event,${id},'competitors')">
+          </div>
+        </div>
+
+        <div class="grid grid-2" style="gap:12px">
+          <div class="goals-field"><label>Min. View Rate (%)</label><input class="input" type="number" id="g-vr" value="${g.viewRate}" step="0.5"></div>
+          <div class="goals-field"><label>Min. Engagement (%)</label><input class="input" type="number" id="g-er" value="${g.engagement}" step="0.5"></div>
+        </div>
+
+        <div class="goals-field">
+          <label style="display:flex;justify-content:space-between">Min. Sentiment Score <span id="g-sent-val" class="mono" style="font-weight:600">${g.sentiment}%</span></label>
+          <input type="range" min="40" max="100" value="${g.sentiment}" id="g-sent" oninput="document.getElementById('g-sent-val').textContent=this.value+'%'" style="width:100%;accent-color:var(--accent)">
+        </div>
+
+        <div class="goals-field">
+          <label>Monatliches Budget (€)</label>
+          <input class="input" type="number" id="g-budget" value="${g.budget}" step="100">
+        </div>
+
+        <div class="info-box-sm">ℹ️ Änderungen werden sofort aktiv. Monitoring greift ab dem nächsten Post-Check.</div>
+      </div>
+      <div class="goals-foot">
+        <button class="btn btn-ghost" onclick="closeGoalsModal()">Abbrechen</button>
+        <button class="btn btn-primary" onclick="saveGoals(${id})">Speichern</button>
+      </div>
+    </div>
+  `;
+  wrap.classList.add('open');
+}
+function closeGoalsModal(){
+  document.getElementById('goals-modal').classList.remove('open');
+}
+function removeGoalTag(el,id,key,val){
+  CREATOR_GOALS[id][key] = CREATOR_GOALS[id][key].filter(x=>x!==val);
+  el.parentElement.remove();
+}
+function addGoalTagKey(e,id,key){
+  if(e.key!=='Enter')return;
+  e.preventDefault();
+  const v = e.target.value.replace(/^[#@]/,'').trim();
+  if(!v)return;
+  if(CREATOR_GOALS[id][key].includes(v)){e.target.value='';return;}
+  CREATOR_GOALS[id][key].push(v);
+  const prefix = key==='hashtags'?'#':'@';
+  const cls = key==='competitors'?' tag-red':'';
+  const html = `<span class="tag${cls}">${prefix}${v}<span class="x" onclick="removeGoalTag(this,${id},'${key}','${v}')">×</span></span>`;
+  e.target.insertAdjacentHTML('beforebegin',html);
+  e.target.value='';
+}
+function saveGoals(id){
+  const g = CREATOR_GOALS[id];
+  g.frequency = document.getElementById('g-freq').value;
+  g.viewRate = parseFloat(document.getElementById('g-vr').value)||0;
+  g.engagement = parseFloat(document.getElementById('g-er').value)||0;
+  g.sentiment = parseInt(document.getElementById('g-sent').value);
+  g.budget = parseInt(document.getElementById('g-budget').value)||0;
+  closeGoalsModal();
+  showToast('Goals aktualisiert für '+CREATORS.find(c=>c.id===id).name);
+}
+
+/* ============ ESC to close panel ============ */
+document.addEventListener('keydown', e=>{if(e.key==='Escape'){closePanel();closeGoalsModal();closeAddCreator();}});
+
+/* ============ INIT ============ */
+navTo('dashboard');
+</script>
+</body>
+</html>
